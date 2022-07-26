@@ -8,4 +8,6 @@ router.register(r"users", views.ListUserViewSet, basename="roles")
 appname = "users" 
 urlpatterns = router.urls + [
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
+    path('test_url/', views.TestUrl.as_view(), name='test_url'),
+
 ]
