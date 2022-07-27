@@ -4,7 +4,8 @@ from . import views
 from rest_framework.authtoken.views import obtain_auth_token
 
 router = SimpleRouter()
-router.register(r"users", views.ListUserViewSet, basename="roles")
+router.register(r"clients", views.ClientUserViewSet, basename="clients")
+router.register(r"doctors", views.DoctorUserViewSet, basename="doctors")
 appname = "users" 
 urlpatterns = router.urls + [
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -46,6 +46,9 @@ INSTALLED_APPS = [
 
     ###### required for token authentication
     'rest_framework.authtoken',
+
+    ##### for PhoneNumberField
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
@@ -65,7 +68,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'users.authentication.ExpiringTokenAuthentication',
     ),
     # 'DEFAULT_FILTER_BACKENDS': (
     #     'django.contrib.auth.backends.ModelBackend',
@@ -140,10 +143,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'mediafiles')
+MEDIA_URL = '/media/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+TOKEN_EXPIRED_AFTER_SECONDS = 600
 AUTH_USER_MODEL = 'users.User'
