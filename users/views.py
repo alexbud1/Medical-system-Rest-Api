@@ -8,16 +8,21 @@ from rest_framework.permissions import IsAuthenticated
 from .models import (
     User,
     Client,
-    Doctor
+    Doctor,
+    Appointment
 )
 
 from .serializers import ( 
     UserSerializer,
     ClientSerializer,
     DoctorSerializer,
+    AppointmentSerializer,
+
 ) 
- 
-class ClientUserViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+from .permissions import YourClientOrReadOnly
+
+
+class ListClientViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     ViewSet which returns a list of all clients.
     """
@@ -31,11 +36,12 @@ class TestUrl(APIView):
 
     def get(self, request, format=None):
         # email = request.user.email
-        age = Client.objects.get(user=request.user.id)
-        serializer = ClientSerializer(age, many=False)
-        return Response(age.clients_age())
+        # age = Client.objects.get(user=request.user.id)
+        # serializer = ClientSerializer(age, many=False)
 
-class DoctorUserViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+        return Response(age.clients_age())
+ 
+class DoctorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     ViewSet which returns a list of all clients.
     """
@@ -43,3 +49,21 @@ class DoctorUserViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = DoctorSerializer
     filter_backends = []
     permission_classes = (IsAuthenticated,) 
+
+class ListAppointmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which returns a list of all clients.
+    """
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+    filter_backends = []
+    permission_classes = [permissions.AllowAny]
+
+class AppointmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates Notification.
+    """
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+    filter_backends = []
+    permission_classes = [YourClientOrReadOnly]

@@ -35,7 +35,6 @@ class Department(models.Model):
         return self.address 
 
 
-
 class Doctor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, blank = False)
     first_name = models.CharField(max_length = 100, blank = False)
