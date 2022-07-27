@@ -149,5 +149,5 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-TOKEN_EXPIRED_AFTER_SECONDS = 600
+TOKEN_EXPIRED_AFTER_SECONDS = 86400
 AUTH_USER_MODEL = 'users.User'
