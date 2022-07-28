@@ -5,9 +5,11 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 router = SimpleRouter()
 router.register(r"clients", views.ListClientViewSet, basename="clients")
-router.register(r"doctors", views.DoctorViewSet, basename="doctors")
-router.register(r"appointment", views.AppointmentViewSet, basename="appointment")
+router.register(r"client", views.ClientViewSet, basename="client")
+router.register(r"doctors", views.ListDoctorViewSet, basename="doctors")
+router.register(r"doctor", views.DoctorViewSet, basename="doctor")
 router.register(r"appointments", views.ListAppointmentViewSet, basename="appointments")
+router.register(r"appointment", views.AppointmentViewSet, basename="appointment")
 
 appname = "users" 
 urlpatterns = router.urls + [

@@ -1,4 +1,5 @@
 from multiprocessing.connection import Client
+from pydoc import Doc
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, status, views, mixins
 from rest_framework.generics import GenericAPIView
@@ -19,17 +20,15 @@ from .serializers import (
     AppointmentSerializer,
 
 ) 
-from .permissions import YourClientOrReadOnly
-
-
-class ListClientViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    ViewSet which returns a list of all clients.
-    """
-    queryset = Client.objects.all()
-    serializer_class = ClientSerializer
-    filter_backends = []
-    permission_classes = (IsAuthenticated,) 
+from .permissions import (
+    YourClientOrReadOnly,
+    IsSuperUserOrReadOnly,
+)
+from .filters import (
+    ClientBelongsToOrganization,
+    DoctorBelongsToOrganization,
+    AppointmentBelongsToOrganization,
+)
 
 class TestUrl(APIView):
     permission_classes = [IsAuthenticated]
@@ -40,30 +39,58 @@ class TestUrl(APIView):
         # serializer = ClientSerializer(age, many=False)
 
         return Response(age.clients_age())
- 
-class DoctorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+
+
+class ListClientViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     ViewSet which returns a list of all clients.
+    """
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+    filter_backends = [ClientBelongsToOrganization]
+    permission_classes = (IsAuthenticated,) 
+
+class ClientViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates Clients.
+    """
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+    filter_backends = [ClientBelongsToOrganization]
+    permission_classes = (IsSuperUserOrReadOnly,) 
+ 
+class ListDoctorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which returns a list of all doctors.
     """
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
-    filter_backends = []
+    filter_backends = [DoctorBelongsToOrganization]
     permission_classes = (IsAuthenticated,) 
+
+class DoctorViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates Doctors.
+    """
+    queryset = Doctor.objects.all()
+    serializer_class = DoctorSerializer
+    filter_backends = [DoctorBelongsToOrganization]
+    permission_classes = [IsSuperUserOrReadOnly]
 
 class ListAppointmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
-    ViewSet which returns a list of all clients.
+    ViewSet which returns a list of all appointments.
     """
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
-    filter_backends = []
-    permission_classes = [permissions.AllowAny]
-
+    filter_backends = [AppointmentBelongsToOrganization]
+    permission_classes = [IsAuthenticated]
+ 
 class AppointmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
-    ViewSet which retrieves, updates, destroys and creates Notification.
+    ViewSet which retrieves, updates, destroys and creates Appointment.
     """
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
-    filter_backends = []
+    filter_backends = [AppointmentBelongsToOrganization]
     permission_classes = [YourClientOrReadOnly]

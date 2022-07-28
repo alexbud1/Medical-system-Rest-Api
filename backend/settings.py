@@ -65,15 +65,19 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
         'users.permissions.YourClientOrReadOnly',
+        'users.permissions.IsSuperUserOrReadOnly',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         'users.authentication.ExpiringTokenAuthentication',
     ),
-    # 'DEFAULT_FILTER_BACKENDS': (
-    #     'django.contrib.auth.backends.ModelBackend',
-    # ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django.contrib.auth.backends.ModelBackend',
+        'users.filters.ClientBelongsToOrganization',
+        'users.filters.DoctorBelongsToOrganization',
+        'users.filters.AppointmentBelongsToOrganization',
+    ),
 }
 
 ROOT_URLCONF = 'backend.urls'
