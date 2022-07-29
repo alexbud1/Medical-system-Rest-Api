@@ -10,6 +10,7 @@ router.register(r"doctors", views.ListDoctorViewSet, basename="doctors")
 router.register(r"doctor", views.DoctorViewSet, basename="doctor")
 router.register(r"appointments", views.ListAppointmentViewSet, basename="appointments")
 router.register(r"appointment", views.AppointmentViewSet, basename="appointment")
+router.register(r"sessionresults", views.ListSessionResultViewSet, basename="sessionresults")
 
 appname = "users" 
 urlpatterns = router.urls + [

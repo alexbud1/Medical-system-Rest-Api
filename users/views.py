@@ -7,17 +7,27 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import (
-    User,
+    User, 
     Client,
     Doctor,
-    Appointment
-)
+    Department,
+    Organization,
+    Appointment,
+    SessionResult,
+    Admin,
+    OrganizationStaff,
+) 
 
 from .serializers import ( 
     UserSerializer,
     ClientSerializer,
     DoctorSerializer,
     AppointmentSerializer,
+    DepartmentSerializer,
+    OrganizationSerializer,
+    SessionResultSerializer,
+    AdminSerializer,
+    OrganizationStaffSerializer
 
 ) 
 from .permissions import (
@@ -28,6 +38,7 @@ from .filters import (
     ClientBelongsToOrganization,
     DoctorBelongsToOrganization,
     AppointmentBelongsToOrganization,
+    SessionResultBelongsToOrganization
 )
 
 class TestUrl(APIView):
@@ -94,3 +105,12 @@ class AppointmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mix
     serializer_class = AppointmentSerializer
     filter_backends = [AppointmentBelongsToOrganization]
     permission_classes = [YourClientOrReadOnly]
+
+class ListSessionResultViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which returns a list of all appointments.
+    """
+    queryset = SessionResult.objects.all()
+    serializer_class = SessionResultSerializer
+    filter_backends = [SessionResultBelongsToOrganization]
+    permission_classes = [IsAuthenticated]

@@ -1,3 +1,4 @@
+from email.policy import default
 from hashlib import blake2b
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -65,9 +66,41 @@ class Appointment(models.Model):
     def __str__ (self):
         data = self.start_time.strftime("%m/%d/%Y, %H:%M:%S")
         return f"{self.client.last_name} {data}"
-
+ 
 class SessionResult(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, blank = False)
-    diagnosis = models.CharField(max_length=400, blank = False)
+    diagnosis = models.CharField(max_length=400, blank = False, default="")
+    complaints = models.CharField(max_length=400, blank = False)
+    examination = models.CharField(max_length=400, blank = False)
+    treatment = models.CharField(max_length=400, blank = False)
+    payer = models.CharField(max_length=150, blank = False)
+    price = models.IntegerField(blank = False)
     def __str__ (self):
         return f"{self.appointment.client} - {self.appointment.doctor}"
+
+class Admin(models.Model):
+    """ 
+    this role is created for person, who can control all the processes
+    in his/her organization
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank = False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank = False)
+    def __str__ (self):
+        return f"Admin from {self.organization}"
+
+class OrganizationStaff(models.Model):
+    """
+    administrator - this person is responsible for payments and can also create appointments for clients, who
+    entered the clinic
+
+    callcenter - this person has the same responsibilities as the administrator, but is not
+    required to be present at the clinic
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank = False)
+    role = models.CharField(max_length = 100, choices = STAFF_ROLE_CHOICES)
+    first_name = models.CharField(max_length = 100, blank = False)
+    last_name = models.CharField(max_length = 100, blank = False)
+    fathers_name = models.CharField(max_length = 100, blank = True,null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank = False)
+    def __str__ (self):
+        return self.last_name 

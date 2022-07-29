@@ -10,7 +10,8 @@ class YourClientOrReadOnly(permissions.BasePermission):
             return True
  
         ##### check if appointment is specified for this doctor
-        if Doctor.objects.get(user = request.user).id == obj.doctor:
+        doctor = Doctor.objects.get(user=request.user)
+        if doctor.id == obj.doctor.id:
             return True
 
         if request.method not in self.edit_methods:

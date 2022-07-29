@@ -37,3 +37,7 @@ SPECIALIZATION_CHOICES =(
     ("Urologist", "Urologist"),
 )
 
+STAFF_ROLE_CHOICES = (
+    ("CallCenter", "Call Center"),
+    ("Administrator", "Administrator"),
+)

@@ -7,7 +7,10 @@ from .models import (
     Department,
     Organization,
     Appointment,
+    SessionResult,
+    Admin,
+    OrganizationStaff,
 ) 
 
-for model in [User, Client, Doctor, Organization, Department, Appointment]:
+for model in [User, Client, Doctor, Organization, Department, Appointment, SessionResult, Admin, OrganizationStaff]:
     admin.site.register(model)
