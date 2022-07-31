@@ -42,7 +42,8 @@ from .filters import (
     ClientBelongsToOrganization,
     DoctorBelongsToOrganization,
     AppointmentBelongsToOrganization,
-    SessionResultBelongsToOrganization
+    SessionResultBelongsToOrganization,
+    AdminBelongsToOrganization,
 )
 from .utils import (
     serializer_create,
@@ -159,3 +160,21 @@ class SignUpViewSet(viewsets.ViewSet):
             transaction.savepoint_rollback(savepoint)
             return Response(str(e),  status = status.HTTP_400_BAD_REQUEST)
         return Response(data = user,  status = status.HTTP_201_CREATED)
+
+class ListAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which returns a list of all appointments.
+    """
+    queryset = Admin.objects.all()
+    serializer_class = AdminSerializer
+    filter_backends = []
+    permission_classes = [IsAuthenticated]
+
+class AdminViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates Session Result.
+    """
+    queryset = Admin.objects.all()
+    serializer_class = AdminSerializer
+    filter_backends = [AdminBelongsToOrganization]
+    permission_classes = [IsAuthenticated, IsSuperUserOrReadOnly]

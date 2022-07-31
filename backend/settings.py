@@ -79,6 +79,7 @@ REST_FRAMEWORK = {
         'users.filters.DoctorBelongsToOrganization',
         'users.filters.AppointmentBelongsToOrganization',
         'users.filters.SessionResultBelongsToOrganization',
+        'users.filters.AdminBelongsToOrganization',
     ),
 }
 
