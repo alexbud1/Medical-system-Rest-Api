@@ -66,6 +66,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
         'users.permissions.YourClientOrReadOnly',
         'users.permissions.IsSuperUserOrReadOnly',
+        'users.permissions.YourSessionResultOrReadOnly',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',

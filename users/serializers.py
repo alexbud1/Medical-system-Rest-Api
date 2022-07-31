@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from django.contrib.auth.hashers import make_password
 from .models import (
     User, 
     Client,
@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-
+ 
 class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -65,3 +65,13 @@ class OrganizationStaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrganizationStaff
         fields = '__all__'
+
+class CreateUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=68, min_length=6, write_only=True)
+
+    def validate_password(self, value: str) -> str:
+        return make_password(value)
+
+    class Meta:
+        model = User
+        fields = ["id", "email","username", "password"]

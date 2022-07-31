@@ -53,7 +53,7 @@ class DoctorBelongsToOrganization(filters.BaseFilterBackend):
                     if staff_quantity == 1:
                         staff = OrganizationStaff.objects.get(user=request.user)
                         return queryset.filter(organization=staff.organization)
-
+ 
 class AppointmentBelongsToOrganization(filters.BaseFilterBackend):
     """
     Filter that only allows employees to see other appointments only from their organization.

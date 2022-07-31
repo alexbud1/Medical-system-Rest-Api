@@ -6,7 +6,6 @@ from .utils import *
 from datetime import datetime
 from phonenumber_field.modelfields import PhoneNumberField
 
-
 class User(AbstractUser):
     email = models.EmailField(verbose_name = 'email address', max_length = 255)
     """unique = True  was not used because the same person 
@@ -68,7 +67,7 @@ class Appointment(models.Model):
         return f"{self.client.last_name} {data}"
  
 class SessionResult(models.Model):
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, blank = False)
+    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, blank = False)
     diagnosis = models.CharField(max_length=400, blank = False, default="")
     complaints = models.CharField(max_length=400, blank = False)
     examination = models.CharField(max_length=400, blank = False)
@@ -87,7 +86,7 @@ class Admin(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank = False)
     def __str__ (self):
         return f"Admin from {self.organization}"
-
+ 
 class OrganizationStaff(models.Model):
     """
     administrator - this person is responsible for payments and can also create appointments for clients, who

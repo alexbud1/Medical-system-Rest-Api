@@ -6,6 +6,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from django.db import transaction
 from .models import (
     User, 
     Client,
@@ -27,12 +29,14 @@ from .serializers import (
     OrganizationSerializer,
     SessionResultSerializer,
     AdminSerializer,
-    OrganizationStaffSerializer
+    OrganizationStaffSerializer,
+    CreateUserSerializer,
 
 ) 
 from .permissions import (
     YourClientOrReadOnly,
     IsSuperUserOrReadOnly,
+    YourSessionResultOrReadOnly,
 )
 from .filters import (
     ClientBelongsToOrganization,
@@ -40,7 +44,10 @@ from .filters import (
     AppointmentBelongsToOrganization,
     SessionResultBelongsToOrganization
 )
-
+from .utils import (
+    serializer_create,
+    
+)
 class TestUrl(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -105,7 +112,7 @@ class AppointmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mix
     serializer_class = AppointmentSerializer
     filter_backends = [AppointmentBelongsToOrganization]
     permission_classes = [YourClientOrReadOnly]
-
+ 
 class ListSessionResultViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     ViewSet which returns a list of all appointments.
@@ -114,3 +121,41 @@ class ListSessionResultViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SessionResultSerializer
     filter_backends = [SessionResultBelongsToOrganization]
     permission_classes = [IsAuthenticated]
+
+class SessionResultViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates Session Result.
+    """
+    queryset = SessionResult.objects.all()
+    serializer_class = SessionResultSerializer
+    filter_backends = [SessionResultBelongsToOrganization]
+    permission_classes = [YourSessionResultOrReadOnly, IsSuperUserOrReadOnly]
+
+class SignUpViewSet(viewsets.ViewSet):
+    """
+    ViewSet which is responsible for a sign up process using credentials
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @transaction.atomic
+    def create(self, request):
+        """
+        Sign-up route by email and password. 
+        User and Participant related to User are created as the result.
+        If data isn't acceptable, all changes to the database will be reversed.
+        """
+        user_data = {
+            'email' : request.data.pop('email'),
+            'username': request.data.pop('username'),
+            'password': request.data.pop('password')
+        }
+        savepoint = transaction.savepoint()
+        try:
+            user = serializer_create(CreateUserSerializer, data = user_data)
+            request.data["user"] = user["id"]
+        except Exception as e:
+            transaction.savepoint_rollback(savepoint)
+            return Response(str(e),  status = status.HTTP_400_BAD_REQUEST)
+        return Response(data = user,  status = status.HTTP_201_CREATED)

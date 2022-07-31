@@ -11,7 +11,9 @@ router.register(r"doctor", views.DoctorViewSet, basename="doctor")
 router.register(r"appointments", views.ListAppointmentViewSet, basename="appointments")
 router.register(r"appointment", views.AppointmentViewSet, basename="appointment")
 router.register(r"sessionresults", views.ListSessionResultViewSet, basename="sessionresults")
-
+router.register(r"sessionresult", views.SessionResultViewSet, basename="sessionresult")
+router.register(r"signup", views.SignUpViewSet, basename="user_signup")
+ 
 appname = "users" 
 urlpatterns = router.urls + [
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
