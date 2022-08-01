@@ -37,6 +37,7 @@ from .permissions import (
     YourClientOrReadOnly,
     IsSuperUserOrReadOnly,
     YourSessionResultOrReadOnly,
+    IsAdminOrReadOnly,
 )
 from .filters import (
     ClientBelongsToOrganization,
@@ -76,7 +77,7 @@ class ClientViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.D
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     filter_backends = [ClientBelongsToOrganization]
-    permission_classes = (IsSuperUserOrReadOnly,) 
+    permission_classes = (IsAdminOrReadOnly,) 
  
 class ListDoctorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
@@ -94,7 +95,7 @@ class DoctorViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.D
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
     filter_backends = [DoctorBelongsToOrganization]
-    permission_classes = [IsSuperUserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 class ListAppointmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
@@ -112,11 +113,11 @@ class AppointmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mix
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     filter_backends = [AppointmentBelongsToOrganization]
-    permission_classes = [YourClientOrReadOnly]
+    permission_classes = [YourClientOrReadOnly,IsAdminOrReadOnly]
  
 class ListSessionResultViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
-    ViewSet which returns a list of all appointments.
+    ViewSet which returns a list of all session results.
     """
     queryset = SessionResult.objects.all()
     serializer_class = SessionResultSerializer
@@ -130,7 +131,7 @@ class SessionResultViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, m
     queryset = SessionResult.objects.all()
     serializer_class = SessionResultSerializer
     filter_backends = [SessionResultBelongsToOrganization]
-    permission_classes = [YourSessionResultOrReadOnly, IsSuperUserOrReadOnly]
+    permission_classes = [YourSessionResultOrReadOnly, IsAdminOrReadOnly]
 
 class SignUpViewSet(viewsets.ViewSet):
     """
@@ -143,8 +144,7 @@ class SignUpViewSet(viewsets.ViewSet):
     @transaction.atomic
     def create(self, request):
         """
-        Sign-up route by email and password. 
-        User and Participant related to User are created as the result.
+        Sign-up route by email,username and password. 
         If data isn't acceptable, all changes to the database will be reversed.
         """
         user_data = {
@@ -163,18 +163,54 @@ class SignUpViewSet(viewsets.ViewSet):
 
 class ListAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
-    ViewSet which returns a list of all appointments.
-    """
-    queryset = Admin.objects.all()
-    serializer_class = AdminSerializer
-    filter_backends = []
-    permission_classes = [IsAuthenticated]
-
-class AdminViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
-    """
-    ViewSet which retrieves, updates, destroys and creates Session Result.
+    ViewSet which returns a list of all admins.
     """
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
     filter_backends = [AdminBelongsToOrganization]
-    permission_classes = [IsAuthenticated, IsSuperUserOrReadOnly]
+    permission_classes = [IsAuthenticated]
+
+class AdminViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates Admin.
+    """
+    queryset = Admin.objects.all()
+    serializer_class = AdminSerializer
+    filter_backends = [AdminBelongsToOrganization]
+    permission_classes = [IsAdminOrReadOnly] 
+
+class ListStaffViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which returns a list of all staff from organization.
+    """
+    queryset = OrganizationStaff.objects.all()
+    serializer_class = OrganizationStaffSerializer
+    filter_backends = [AdminBelongsToOrganization]
+    permission_classes = [IsAdminOrReadOnly]
+
+class StaffViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates staff from organization.
+    """
+    queryset = OrganizationStaff.objects.all()
+    serializer_class = OrganizationStaffSerializer
+    filter_backends = [AdminBelongsToOrganization]
+    permission_classes = [IsAdminOrReadOnly] 
+
+class ListDepartmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which returns a list of all staff from organization.
+    """
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    filter_backends = [AdminBelongsToOrganization]
+    permission_classes = [IsAdminOrReadOnly]
+
+class DepartmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    ViewSet which retrieves, updates, destroys and creates staff from organization.
+    """
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    filter_backends = [AdminBelongsToOrganization]
+    permission_classes = [IsAdminOrReadOnly] 

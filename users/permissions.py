@@ -36,7 +36,7 @@ class IsSuperUserOrReadOnly(permissions.BasePermission):
 ##### session result
 class YourSessionResultOrReadOnly(permissions.BasePermission):
     edit_methods = ("PUT", "PATCH")
-
+ 
     def has_object_permission(self, request, view, obj):
         # if request.user.is_superuser:
         #     return True
@@ -50,4 +50,19 @@ class YourSessionResultOrReadOnly(permissions.BasePermission):
         # if request.method not in self.edit_methods:
         #     return True
 
+        return False
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    edit_methods = ("PUT", "PATCH")
+
+    def has_permission(self, request, view):
+        if request.user.is_superuser:
+            return True
+
+        admin_quantity = Admin.objects.filter(user=request.user).count()
+        if admin_quantity == 1:
+            return True
+
+        if request.method not in self.edit_methods:
+            return True
         return False
