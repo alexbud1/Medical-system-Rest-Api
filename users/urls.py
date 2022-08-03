@@ -13,10 +13,10 @@ router.register(r"appointment", views.AppointmentViewSet, basename="appointment"
 router.register(r"sessionresults", views.ListSessionResultViewSet, basename="sessionresults")
 router.register(r"sessionresult", views.SessionResultViewSet, basename="sessionresult")
 router.register(r"signup", views.SignUpViewSet, basename="user_signup")
- 
+router.register(r"doctor_stats", views.DoctorStatisticsViewSet, basename="doctor_stats")
 appname = "users" 
 urlpatterns = router.urls + [
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     path('test_url/', views.TestUrl.as_view(), name='test_url'),
 
-]
+] 

@@ -41,6 +41,11 @@ STAFF_ROLE_CHOICES = (
     ("CallCenter", "Call Center"),
     ("Administrator", "Administrator"),
 )
+
+SEX_CHOICES = (
+    ("Male", "Male"),
+    ("Female", "Female"),
+)
 def serializer_create(serializer_cls, **kwargs):
     serializer = serializer_cls(**kwargs)
     serializer.is_valid(raise_exception = True)

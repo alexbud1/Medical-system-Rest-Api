@@ -1,13 +1,12 @@
+from dis import dis
 from multiprocessing.connection import Client
-from pydoc import Doc
-from django.shortcuts import render
+import statistics
 from rest_framework import viewsets, permissions, status, views, mixins
-from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
 from django.db import transaction
+from datetime import datetime, timedelta
 from .models import (
     User, 
     Client,
@@ -68,7 +67,7 @@ class ListClientViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     filter_backends = [ClientBelongsToOrganization]
-    permission_classes = (IsAuthenticated,) 
+    permission_classes = () 
 
 class ClientViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
@@ -205,7 +204,7 @@ class ListDepartmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = DepartmentSerializer
     filter_backends = [AdminBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly]
-
+ 
 class DepartmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
     ViewSet which retrieves, updates, destroys and creates staff from organization.
@@ -214,3 +213,51 @@ class DepartmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     serializer_class = DepartmentSerializer
     filter_backends = [AdminBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly] 
+
+class DoctorStatisticsViewSet(viewsets.ViewSet):
+    """
+    ViewSet for retrieving doctor's monthly statistics.
+    {
+        "general amount of children" : 100,
+        "amount of boys in age of 1-16" : 30,
+        "amount of girls in age of 1-18" : 30,
+        "amount of guys in age of 16-18" : 20,
+        "amount of children in age of 0-1" : 15,
+        "amount of disabled clients in age of 0-18" : 5
+    }
+    """  
+    def list(self, request):
+        ##### check if the person, who send request is doctor
+        doctor_quantity = Doctor.objects.filter(user=request.user).count()
+        if doctor_quantity == 1:
+            doctor = Doctor.objects.get(user=request.user)
+            ##### list of all doctor's appointments
+            appointments = Appointment.objects.filter(doctor=doctor.id)
+            this_month = datetime.now().month
+            ##### appointments which were conducted this month only
+            appointments = appointments.filter(start_time__month=this_month)
+            clients_id = []
+            for appointment in appointments:
+                if appointment.client.id not in clients_id:
+                    ##### ids of clients for certain doctor
+                    clients_id.append(appointment.client.id)
+            ##### list of all clients filtered by month and doctor
+            clients = Client.objects.filter(id__in = clients_id)
+
+
+            all_clients = clients.count()
+            boys16 = clients.boys16().count()
+            girls = clients.girls().count()
+            guys = clients.guys18().count()
+            children = clients.children().count()
+            disabled = clients.disabled().count()
+
+            statistics = {
+                "general_quantity" : all_clients,
+                "boys1to16" : boys16,
+                "girls" : girls,
+                "guys1to18" : guys,
+                "children0to1" : children,
+                "disabled" : disabled
+            }
+            return Response(statistics) 

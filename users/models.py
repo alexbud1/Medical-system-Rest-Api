@@ -3,9 +3,9 @@ from hashlib import blake2b
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .utils import *
-from datetime import datetime
+import datetime
 from phonenumber_field.modelfields import PhoneNumberField
-
+from .querysets import  Boys16Queryset
 class User(AbstractUser):
     email = models.EmailField(verbose_name = 'email address', max_length = 255)
     """unique = True  was not used because the same person 
@@ -22,16 +22,19 @@ class Organization(models.Model):
     name = models.CharField(max_length = 100, blank = False)
     def __str__ (self):
         return self.name 
-
+ 
 class Client(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, blank = False)
     first_name = models.CharField(max_length = 100, blank = False)
     last_name = models.CharField(max_length = 100, blank = False)
     fathers_name = models.CharField(max_length = 100, blank = True,null=True)
     birthday = models.DateField(blank=False)
+    sex = models.CharField(max_length = 20, blank = True, choices = SEX_CHOICES)
+    is_disabled = models.BooleanField(default=False)
     address = models.CharField(max_length = 300, blank = True, null=True)
     phone = PhoneNumberField(null=True, blank=True)
     client_of_org = models.ForeignKey(Organization, blank=False, on_delete=models.CASCADE)
+    objects = Boys16Queryset.as_manager()
     def __str__ (self):
         return self.last_name 
     
@@ -49,7 +52,7 @@ class Doctor(models.Model):
     organization = models.ForeignKey(Organization, blank = False, on_delete=models.CASCADE)
     def __str__ (self):
         return self.last_name 
-
+ 
 class Department(models.Model):
     address = models.CharField(max_length = 300, blank = False)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank = False)
