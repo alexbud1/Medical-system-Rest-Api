@@ -22,7 +22,8 @@ class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Client
-        exclude = ['client_of_org']
+        fields = '__all__'
+
 
 class DoctorSerializer(serializers.ModelSerializer):
 

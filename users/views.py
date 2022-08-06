@@ -1,12 +1,10 @@
-from dis import dis
 from multiprocessing.connection import Client
-import statistics
 from rest_framework import viewsets, permissions, status, views, mixins
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
-from datetime import datetime, timedelta
+from datetime import datetime
 from .models import (
     User, 
     Client,
@@ -39,11 +37,9 @@ from .permissions import (
     IsAdminOrReadOnly,
 )
 from .filters import (
-    ClientBelongsToOrganization,
-    DoctorBelongsToOrganization,
     AppointmentBelongsToOrganization,
     SessionResultBelongsToOrganization,
-    AdminBelongsToOrganization,
+    ObjectBelongsToOrganization
 )
 from .utils import (
     serializer_create,
@@ -66,7 +62,7 @@ class ListClientViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
-    filter_backends = [ClientBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = () 
 
 class ClientViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -75,7 +71,7 @@ class ClientViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.D
     """
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
-    filter_backends = [ClientBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = (IsAdminOrReadOnly,) 
  
 class ListDoctorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -84,7 +80,7 @@ class ListDoctorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
-    filter_backends = [DoctorBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = (IsAuthenticated,) 
 
 class DoctorViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -93,7 +89,7 @@ class DoctorViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.D
     """
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
-    filter_backends = [DoctorBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly]
 
 class ListAppointmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -166,7 +162,7 @@ class ListAdminViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
-    filter_backends = [AdminBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAuthenticated]
 
 class AdminViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -175,16 +171,16 @@ class AdminViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.De
     """
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
-    filter_backends = [AdminBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly] 
-
+ 
 class ListStaffViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     ViewSet which returns a list of all staff from organization.
     """
     queryset = OrganizationStaff.objects.all()
     serializer_class = OrganizationStaffSerializer
-    filter_backends = [AdminBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly]
 
 class StaffViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -193,7 +189,7 @@ class StaffViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.De
     """
     queryset = OrganizationStaff.objects.all()
     serializer_class = OrganizationStaffSerializer
-    filter_backends = [AdminBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly] 
 
 class ListDepartmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -202,7 +198,7 @@ class ListDepartmentViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    filter_backends = [AdminBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly]
  
 class DepartmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -211,7 +207,7 @@ class DepartmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     """
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    filter_backends = [AdminBelongsToOrganization]
+    filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly] 
 
 class DoctorStatisticsViewSet(viewsets.ViewSet):
@@ -256,7 +252,7 @@ class DoctorStatisticsViewSet(viewsets.ViewSet):
                 "general_quantity" : all_clients,
                 "boys1to16" : boys16,
                 "girls" : girls,
-                "guys1to18" : guys,
+                "guys16to18" : guys,
                 "children0to1" : children,
                 "disabled" : disabled
             }

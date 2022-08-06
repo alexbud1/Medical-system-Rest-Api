@@ -11,16 +11,18 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
 from pathlib import Path
-
+import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env()
+environ.Env.read_env()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=ncswd0d!g*m84&^@la&qzl&%ex54&*-leix*86xm25bk52vfz'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -76,11 +78,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django.contrib.auth.backends.ModelBackend',
-        'users.filters.ClientBelongsToOrganization',
-        'users.filters.DoctorBelongsToOrganization',
         'users.filters.AppointmentBelongsToOrganization',
         'users.filters.SessionResultBelongsToOrganization',
-        'users.filters.AdminBelongsToOrganization',
+        'users.filters.ObjectBelongsToOrganization',
     ),
 }
 
@@ -111,9 +111,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'med_db',
-        'USER': 'postgres',
-        'PASSWORD': '02072005',
+        'NAME': env('DATABASE_NAME'),
+        'USER':  env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASS'),
         'HOST': 'localhost',
         'PORT': '5432',
     }

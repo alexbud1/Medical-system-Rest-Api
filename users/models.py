@@ -22,7 +22,7 @@ class Organization(models.Model):
     name = models.CharField(max_length = 100, blank = False)
     def __str__ (self):
         return self.name 
- 
+  
 class Client(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, blank = False)
     first_name = models.CharField(max_length = 100, blank = False)
@@ -33,7 +33,7 @@ class Client(models.Model):
     is_disabled = models.BooleanField(default=False)
     address = models.CharField(max_length = 300, blank = True, null=True)
     phone = PhoneNumberField(null=True, blank=True)
-    client_of_org = models.ForeignKey(Organization, blank=False, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, blank=False, on_delete=models.CASCADE)
     objects = Boys16Queryset.as_manager()
     def __str__ (self):
         return self.last_name 
@@ -52,7 +52,7 @@ class Doctor(models.Model):
     organization = models.ForeignKey(Organization, blank = False, on_delete=models.CASCADE)
     def __str__ (self):
         return self.last_name 
- 
+  
 class Department(models.Model):
     address = models.CharField(max_length = 300, blank = False)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank = False)
@@ -106,3 +106,5 @@ class OrganizationStaff(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank = False)
     def __str__ (self):
         return self.last_name 
+    class Meta:
+        verbose_name_plural = "Organization staff"
