@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     ###### DRF extension
     'rest_framework',
     'corsheaders',
+    'drf_yasg',
     'users.apps.UsersConfig',
     'django_extensions',
 
