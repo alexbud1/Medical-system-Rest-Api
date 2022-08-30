@@ -43,7 +43,8 @@ from .filters import (
 )
 from .utils import (
     serializer_create,
-    
+    check_week,
+    Statistics
 )
 class TestUrl(APIView):
     permission_classes = [IsAuthenticated]
@@ -209,8 +210,8 @@ class DepartmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     serializer_class = DepartmentSerializer
     filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly] 
-
-class DoctorStatisticsViewSet(viewsets.ViewSet):
+ 
+class DoctorMonthlyStatisticsViewSet(viewsets.ViewSet):
     """
     ViewSet for retrieving doctor's monthly statistics.
     {
@@ -240,20 +241,26 @@ class DoctorStatisticsViewSet(viewsets.ViewSet):
             ##### list of all clients filtered by month and doctor
             clients = Client.objects.filter(id__in = clients_id)
 
+            stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
+            return Response(stats_obj.get_statistics())
 
-            all_clients = clients.count()
-            boys16 = clients.boys16().count()
-            girls = clients.girls().count()
-            guys = clients.guys18().count()
-            children = clients.children().count()
-            disabled = clients.disabled().count()
+class DoctorWeeklyStatisticsViewSet(viewsets.ViewSet):
+    def list(self, request):
+        ##### check if the person, who send request is doctor
+        doctor_quantity = Doctor.objects.filter(user=request.user).count()
+        if doctor_quantity == 1:
+            doctor = Doctor.objects.get(user=request.user)
+            ##### list of all doctor's appointments
+            appointments = Appointment.objects.filter(doctor=doctor.id)
 
-            statistics = {
-                "general_quantity" : all_clients,
-                "boys1to16" : boys16,
-                "girls" : girls,
-                "guys16to18" : guys,
-                "children0to1" : children,
-                "disabled" : disabled
-            }
-            return Response(statistics) 
+            clients_id = []
+            for appointment in appointments:
+                if check_week(appointment.start_time.strftime("%m/%d/%Y")):
+                    if appointment.client.id not in clients_id:
+                        ##### ids of clients for certain doctor
+                        clients_id.append(appointment.client.id)
+            ##### list of all clients filtered by week and doctor
+            clients = Client.objects.filter(id__in = clients_id)
+
+            stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
+            return Response(stats_obj.get_statistics())

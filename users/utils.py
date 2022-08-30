@@ -1,3 +1,5 @@
+import datetime
+
 SPECIALIZATION_CHOICES =(
     ("Allergist/Immunologist", "Allergist/Immunologist"),
     ("Anesthesiologist", "Anesthesiologist"),
@@ -51,3 +53,38 @@ def serializer_create(serializer_cls, **kwargs):
     serializer.is_valid(raise_exception = True)
     serializer.save()
     return serializer.data
+
+def check_week(date):
+    today = datetime.datetime.now()
+    weekday = today.isoweekday()
+    weekdays = []
+    for i in range(1,8):
+        if i <= weekday:
+            weekdays.append((today - datetime.timedelta(days=weekday - i)).strftime("%m/%d/%Y"))
+        else:
+            weekdays.append((today + datetime.timedelta(days=i - weekday)).strftime("%m/%d/%Y"))
+
+    if date in weekdays:
+        return True
+    else:
+        return False
+
+class Statistics():
+    def __init__(self, all_clients, boys16, girls, guys, children, disabled):
+        self.all_clients = all_clients
+        self.boys16 = boys16
+        self.girls = girls
+        self.guys = guys
+        self.children = children
+        self.disabled = disabled
+
+    def get_statistics(self):
+        statistics = {
+                "general_quantity" : self.all_clients,
+                "boys1to16" : self.boys16,
+                "girls" : self.girls,
+                "guys16to18" : self.guys,
+                "children0to1" : self.children,
+                "disabled" : self.disabled
+            }
+        return statistics
