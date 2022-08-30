@@ -16,7 +16,8 @@ There is a wide range of features, here you can see some of them:
     
  - Other special features:
 	 - Sign Up for doctors, staff and admins + Token based authentication
-	 - Monthly statistics for certain doctor
+	 - Monthly statistics for certain doctor( amount of all clients, amount of boys in the age of 1-16, amount of girls, amount of boys in the age of 17-18, amount of children in the age of 0-1 and amount of disabled children)
+	 - Weekly statistics for certain doctor(the same approach as in monthly statistics, but only for current week)
 
 **I would also like to explain the connections between different models:**
 
