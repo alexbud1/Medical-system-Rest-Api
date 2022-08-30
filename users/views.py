@@ -1,4 +1,5 @@
 from multiprocessing.connection import Client
+from urllib import request
 from rest_framework import viewsets, permissions, status, views, mixins
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -44,7 +45,8 @@ from .filters import (
 from .utils import (
     serializer_create,
     check_week,
-    Statistics
+    Statistics,
+    check_semester
 )
 class TestUrl(APIView):
     permission_classes = [IsAuthenticated]
@@ -210,29 +212,35 @@ class DepartmentViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     serializer_class = DepartmentSerializer
     filter_backends = [ObjectBelongsToOrganization]
     permission_classes = [IsAdminOrReadOnly] 
- 
+
+def get_doctors_appointments(request):
+    ##### check if the person, who send request is doctor
+    doctor_quantity = Doctor.objects.filter(user=request.user).count()
+    if doctor_quantity == 1:
+        doctor = Doctor.objects.get(user=request.user)
+        ##### list of all doctor's appointments
+        appointments = Appointment.objects.filter(doctor=doctor.id)
+        return appointments
+
 class DoctorMonthlyStatisticsViewSet(viewsets.ViewSet):
     """
-    ViewSet for retrieving doctor's monthly statistics.
-    {
-        "general amount of children" : 100,
-        "amount of boys in age of 1-16" : 30,
-        "amount of girls in age of 1-18" : 30,
-        "amount of guys in age of 16-18" : 20,
-        "amount of children in age of 0-1" : 15,
-        "amount of disabled clients in age of 0-18" : 5
-    }
+    ViewSet for retrieving doctor's monthly statistics.\n
+    {\n
+        "general amount of children" : 100,\n
+        "amount of boys in age of 1-16" : 30,\n
+        "amount of girls in age of 1-18" : 30,\n
+        "amount of guys in age of 16-18" : 20,\n
+        "amount of children in age of 0-1" : 15,\n
+        "amount of disabled clients in age of 0-18" : 5\n
+    }\n
     """  
     def list(self, request):
-        ##### check if the person, who send request is doctor
-        doctor_quantity = Doctor.objects.filter(user=request.user).count()
-        if doctor_quantity == 1:
-            doctor = Doctor.objects.get(user=request.user)
-            ##### list of all doctor's appointments
-            appointments = Appointment.objects.filter(doctor=doctor.id)
+        appointments = get_doctors_appointments(request)
+        if appointments:
             this_month = datetime.now().month
+            this_year = datetime.now().year
             ##### appointments which were conducted this month only
-            appointments = appointments.filter(start_time__month=this_month)
+            appointments = appointments.filter(start_time__month=this_month).filter(start_time__year=this_year)
             clients_id = []
             for appointment in appointments:
                 if appointment.client.id not in clients_id:
@@ -243,17 +251,18 @@ class DoctorMonthlyStatisticsViewSet(viewsets.ViewSet):
 
             stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
             return Response(stats_obj.get_statistics())
+        else:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+
+
 
 class DoctorWeeklyStatisticsViewSet(viewsets.ViewSet):
     def list(self, request):
-        ##### check if the person, who send request is doctor
-        doctor_quantity = Doctor.objects.filter(user=request.user).count()
-        if doctor_quantity == 1:
-            doctor = Doctor.objects.get(user=request.user)
-            ##### list of all doctor's appointments
-            appointments = Appointment.objects.filter(doctor=doctor.id)
 
-            clients_id = []
+        appointments = get_doctors_appointments(request)
+        clients_id = []
+        if appointments:
             for appointment in appointments:
                 if check_week(appointment.start_time.strftime("%m/%d/%Y")):
                     if appointment.client.id not in clients_id:
@@ -264,3 +273,45 @@ class DoctorWeeklyStatisticsViewSet(viewsets.ViewSet):
 
             stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
             return Response(stats_obj.get_statistics())
+        else:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+class DoctorSemesterStatisticsViewSet(viewsets.ViewSet):
+    def list(self, request):
+
+        appointments = get_doctors_appointments(request)
+        clients_id = []
+        if appointments:
+            for appointment in appointments:
+                if check_semester(appointment.start_time):
+                    if appointment.client.id not in clients_id:
+                        ##### ids of clients for certain doctor
+                        clients_id.append(appointment.client.id)
+            ##### list of all clients filtered by week and doctor
+            clients = Client.objects.filter(id__in = clients_id)
+
+            stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
+            return Response(stats_obj.get_statistics())
+        else:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+
+class DoctorYearlyStatisticsViewSet(viewsets.ViewSet):
+    def list(self, request):
+        appointments = get_doctors_appointments(request)
+        if appointments:
+            this_year = datetime.now().year
+            ##### appointments which were conducted this month only
+            appointments = appointments.filter(start_time__year=this_year)
+            clients_id = []
+            for appointment in appointments:
+                if appointment.client.id not in clients_id:
+                    ##### ids of clients for certain doctor
+                    clients_id.append(appointment.client.id)
+            ##### list of all clients filtered by month and doctor
+            clients = Client.objects.filter(id__in = clients_id)
+
+            stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
+            return Response(stats_obj.get_statistics())
+        else:
+            return Response(status = status.HTTP_400_BAD_REQUEST)

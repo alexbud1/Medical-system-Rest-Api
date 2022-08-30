@@ -1,4 +1,6 @@
 import datetime
+import pytz
+
 
 SPECIALIZATION_CHOICES =(
     ("Allergist/Immunologist", "Allergist/Immunologist"),
@@ -68,6 +70,22 @@ def check_week(date):
         return True
     else:
         return False
+
+def check_semester(date):
+    utc=pytz.UTC
+    today = utc.localize(datetime.datetime.now())
+    second_semester_start  = utc.localize(datetime.datetime(today.year, 7, 1))
+    first_semester_start  = utc.localize(datetime.datetime(today.year, 1, 1))
+    if first_semester_start <= today < second_semester_start:
+        if first_semester_start <= date < second_semester_start:
+            return True
+        else:
+            return False
+    else:
+        if date >= second_semester_start and date.year == today.year:
+            return True
+        else:
+            return False
 
 class Statistics():
     def __init__(self, all_clients, boys16, girls, guys, children, disabled):
