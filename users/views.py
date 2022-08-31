@@ -222,6 +222,17 @@ def get_doctors_appointments(request):
         appointments = Appointment.objects.filter(doctor=doctor.id)
         return appointments
 
+def return_clients(appointments, func=None):
+    clients_id = []
+    for appointment in appointments:
+        if (func and func(appointment.start_time)) or func==None:
+            if appointment.client.id not in clients_id:
+                ##### ids of clients for certain doctor
+                clients_id.append(appointment.client.id)
+                ##### list of all clients filtered by date range and doctor
+        
+    return Client.objects.filter(id__in = clients_id)
+
 class DoctorMonthlyStatisticsViewSet(viewsets.ViewSet):
     """
     ViewSet for retrieving doctor's monthly statistics.\n
@@ -241,14 +252,8 @@ class DoctorMonthlyStatisticsViewSet(viewsets.ViewSet):
             this_year = datetime.now().year
             ##### appointments which were conducted this month only
             appointments = appointments.filter(start_time__month=this_month).filter(start_time__year=this_year)
-            clients_id = []
-            for appointment in appointments:
-                if appointment.client.id not in clients_id:
-                    ##### ids of clients for certain doctor
-                    clients_id.append(appointment.client.id)
-            ##### list of all clients filtered by month and doctor
-            clients = Client.objects.filter(id__in = clients_id)
-
+            ##### clients who visited this doctor and filtered by date range
+            clients = return_clients(appointments)
             stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
             return Response(stats_obj.get_statistics())
         else:
@@ -261,16 +266,8 @@ class DoctorWeeklyStatisticsViewSet(viewsets.ViewSet):
     def list(self, request):
 
         appointments = get_doctors_appointments(request)
-        clients_id = []
         if appointments:
-            for appointment in appointments:
-                if check_week(appointment.start_time.strftime("%m/%d/%Y")):
-                    if appointment.client.id not in clients_id:
-                        ##### ids of clients for certain doctor
-                        clients_id.append(appointment.client.id)
-            ##### list of all clients filtered by week and doctor
-            clients = Client.objects.filter(id__in = clients_id)
-
+            clients = return_clients(appointments, check_week)
             stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
             return Response(stats_obj.get_statistics())
         else:
@@ -280,16 +277,8 @@ class DoctorSemesterStatisticsViewSet(viewsets.ViewSet):
     def list(self, request):
 
         appointments = get_doctors_appointments(request)
-        clients_id = []
         if appointments:
-            for appointment in appointments:
-                if check_semester(appointment.start_time):
-                    if appointment.client.id not in clients_id:
-                        ##### ids of clients for certain doctor
-                        clients_id.append(appointment.client.id)
-            ##### list of all clients filtered by week and doctor
-            clients = Client.objects.filter(id__in = clients_id)
-
+            clients = return_clients(appointments, check_semester)
             stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
             return Response(stats_obj.get_statistics())
         else:
@@ -303,13 +292,8 @@ class DoctorYearlyStatisticsViewSet(viewsets.ViewSet):
             this_year = datetime.now().year
             ##### appointments which were conducted this month only
             appointments = appointments.filter(start_time__year=this_year)
-            clients_id = []
-            for appointment in appointments:
-                if appointment.client.id not in clients_id:
-                    ##### ids of clients for certain doctor
-                    clients_id.append(appointment.client.id)
-            ##### list of all clients filtered by month and doctor
-            clients = Client.objects.filter(id__in = clients_id)
+            ##### clients who visited this doctor and filtered by date range
+            clients = return_clients(appointments)
 
             stats_obj = Statistics(clients.count(), clients.boys16().count(), clients.girls().count(), clients.guys18().count(), clients.children().count(), clients.disabled().count())
             return Response(stats_obj.get_statistics())

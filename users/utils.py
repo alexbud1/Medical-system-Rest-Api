@@ -66,7 +66,7 @@ def check_week(date):
         else:
             weekdays.append((today + datetime.timedelta(days=i - weekday)).strftime("%m/%d/%Y"))
 
-    if date in weekdays:
+    if date.strftime("%m/%d/%Y") in weekdays:
         return True
     else:
         return False
